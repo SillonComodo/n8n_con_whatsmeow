@@ -1,8 +1,8 @@
 module whatsmeow-server
 
-go 1.25.0
+go 1.24.0
 
-toolchain go1.25.0
+toolchain go1.24.5
 
 require (
 	github.com/mattn/go-sqlite3 v1.14.32

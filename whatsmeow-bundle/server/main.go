@@ -1249,6 +1249,7 @@ func handleSessionConnect(w http.ResponseWriter, r *http.Request) {
 		select {
 		case evt, ok := <-qrChan:
 			if !ok {
+				// Canal cerrado sin evento reconocido
 				fmt.Printf("[%s] QR channel closed unexpectedly\n", sessionName)
 				jsonResponse(w, http.StatusInternalServerError, false, "QR channel closed unexpectedly")
 				return
