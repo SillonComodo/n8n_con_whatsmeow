@@ -462,17 +462,32 @@ class WhatsMeowTrigger {
         }
 
         // Build the output data
+        // reply_to: campo listo para usar en "Send Message > Phone Number"
+        // Contiene el número de teléfono real si fue resuelto desde LID,
+        // o el JID completo (@lid) si no fue posible resolverlo.
+        // Ambos formatos son aceptados por el servidor Go en el campo "phone".
+        const rawData = body.raw || {};
+        const replyTo = rawData.reply_to || body.from_jid || body.phone || body.from || '';
+
         const outputData = {
+            // *** CAMPO PRINCIPAL PARA RESPONDER ***
+            // Usar este campo directamente en "Send Message > Phone Number"
+            reply_to: replyTo,
+
             // Core message info
             session: body.session_name || '',
             messageId: body.message_id || '',
             timestamp: body.timestamp || 0,
             
-            // Sender info - PHONE es el campo principal para el número
+            // Sender info
+            // phone: número de teléfono real (si fue resuelto desde LID) o JID completo como fallback
             phone: body.phone || body.from || '',
             from: body.from || '',
             fromJid: body.from_jid || '',
             fromName: body.from_name || '',
+            
+            // Indica si el remitente usa el sistema LID (nuevo sistema de privacidad de WhatsApp)
+            isLid: rawData.is_lid === 'true',
             
             // Chat info
             chat: body.chat || '',
@@ -501,7 +516,7 @@ class WhatsMeowTrigger {
             mentions: body.mentions || [],
             
             // Raw data for advanced users
-            raw: body.raw || {},
+            raw: rawData,
             
             // Full original payload
             _original: body,

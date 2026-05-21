@@ -23,13 +23,22 @@ function buildSessionName(scope, workflowId, customName) {
 }
 
 /**
- * Normaliza número de teléfono (quita +, espacios, guiones)
+ * Normaliza número de teléfono o JID para enviarlo al servidor Go.
+ * - Si contiene '@' (ej: 56324922601567@lid, 5215646404427@s.whatsapp.net):
+ *   se pasa tal cual — el servidor Go lo parsea como JID completo.
+ * - Si es solo dígitos (ej: 5491123456789):
+ *   se limpia y se pasa como número de teléfono.
  */
 function normalizePhone(phoneNumber) {
     const trimmed = phoneNumber.trim();
     if (!trimmed) {
         throw new Error('Phone number is required');
     }
+    // Si ya es un JID completo (contiene @), pasarlo sin modificar
+    if (trimmed.includes('@')) {
+        return trimmed;
+    }
+    // Es un número de teléfono: quitar +, espacios, guiones
     return trimmed.replace(/[^0-9]/g, '');
 }
 
@@ -199,7 +208,8 @@ class WhatsMeow {
                     name: 'phoneNumber',
                     type: 'string',
                     default: '',
-                    description: 'Destination phone number (with country code, e.g. 5491123456789)',
+                    description: 'Destination phone number with country code (e.g. 5491123456789), a full JID (e.g. 56324922601567@lid), or use {{ $json.reply_to }} from WhatsMeow Trigger to reply automatically.',
+                    placeholder: '5491123456789 or {{ $json.reply_to }}',
                     displayOptions: {
                         show: {
                             operation: ['sendMessage', 'sendMedia'],

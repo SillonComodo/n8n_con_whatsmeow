@@ -643,17 +643,36 @@ func (s *Session) handleIncomingMessage(msg *events.Message) {
 	}
 
 	// Extraer número de teléfono del remitente
-	// El JID puede ser: número@s.whatsapp.net o lid:xxx@lid
+	// El JID puede ser: número@s.whatsapp.net o LID@lid
 	senderJID := msg.Info.Sender
 	senderPhone := senderJID.User
 
-	// Si es un servidor LID, el número real podría no estar disponible directamente
-	// pero lo guardamos en raw para debugging
+	// Detectar si el remitente usa el nuevo sistema LID de WhatsApp
 	isLID := senderJID.Server == "lid"
+
+	// Si es LID, intentar resolver al número de teléfono real
+	// WhatsApp migró a LIDs para privacidad, pero whatsmeow mantiene
+	// un mapeo LID->PN en el store si ha habido interacción previa
+	if isLID {
+		if pnJID, err := s.Client.Store.LIDs.GetPNForLID(context.Background(), senderJID.ToNonAD()); err == nil && !pnJID.IsEmpty() {
+			senderPhone = pnJID.User
+			fmt.Printf("[%s] Resolved LID %s -> phone %s\n", s.Name, senderJID.String(), pnJID.User)
+		} else {
+			// No se pudo resolver: usar el JID completo como identificador para que
+			// el usuario pueda usarlo directamente en "send message" como reply_to
+			senderPhone = senderJID.String()
+			fmt.Printf("[%s] Could not resolve LID %s to phone number, using JID as identifier\n", s.Name, senderJID.String())
+		}
+	}
 
 	// Extraer info del chat
 	chatJID := msg.Info.Chat
 	chatPhone := chatJID.User
+
+	// Para el campo reply_to: usar el JID completo correcto para responder
+	// - Si es LID: usar el from_jid completo (ej: 56324922601567@lid)
+	// - Si es número normal: usar número@s.whatsapp.net
+	replyTo := senderJID.String()
 
 	// Construir mensaje para webhook
 	incoming := IncomingMessage{
@@ -669,12 +688,14 @@ func (s *Session) handleIncomingMessage(msg *events.Message) {
 		Raw:         make(map[string]string),
 	}
 
-	// Guardar JIDs originales en raw para debugging
+	// Guardar información de resolución LID en raw para debugging y uso avanzado
 	incoming.Raw["sender_jid"] = senderJID.String()
 	incoming.Raw["chat_jid"] = chatJID.String()
 	incoming.Raw["sender_server"] = senderJID.Server
+	incoming.Raw["reply_to"] = replyTo
 	if isLID {
 		incoming.Raw["is_lid"] = "true"
+		incoming.Raw["lid_user"] = senderJID.User
 	}
 
 	// Obtener nombre del remitente
@@ -1086,16 +1107,17 @@ func convertToOpusForPTT(audioData []byte, originalMimeType string) ([]byte, str
 	return convertedData, "audio/ogg; codecs=opus", nil
 }
 
-// parsePhoneOrLID convierte un string (teléfono o LID) a JID
-// Soporta: números de teléfono normales (5215646404427), LIDs (180238604570868),
-// o JIDs completos (5215646404427@s.whatsapp.net, 180238604570868@lid)
-// También limpia el "device part" (ej: 5215646404427:32 -> 5215646404427)
+// parsePhoneOrLID convierte un string (teléfono, LID o JID completo) a JID
+// Soporta:
+// - JIDs completos con @: 5215646404427@s.whatsapp.net, 56324922601567@lid, 123@g.us
+// - Números de teléfono normales (10-15 dígitos): 5215646404427
+// - LIDs numéricos (>15 dígitos): 56324922601567
+// - Limpia device part: 5215646404427:32 -> 5215646404427
 func parsePhoneOrLID(input string) (types.JID, error) {
 	input = strings.TrimSpace(input)
 
-	// Si ya contiene @, es un JID completo
+	// Si ya contiene @, es un JID completo - parsear directamente
 	if strings.Contains(input, "@") {
-		// Parsear el JID
 		jid, err := types.ParseJID(input)
 		if err != nil {
 			return jid, err
@@ -1103,10 +1125,11 @@ func parsePhoneOrLID(input string) (types.JID, error) {
 		// Limpiar device part si existe (el :XX después del número)
 		// WhatsApp no acepta JIDs con device part como destinatarios
 		jid.Device = 0
+		fmt.Printf("[parsePhoneOrLID] Parsed full JID: %s (server: %s)\n", jid.String(), jid.Server)
 		return jid, nil
 	}
 
-	// Limpiar caracteres no numéricos y device part
+	// Limpiar caracteres no numéricos (espacios, +, -)
 	cleaned := strings.ReplaceAll(input, "+", "")
 	cleaned = strings.ReplaceAll(cleaned, " ", "")
 	cleaned = strings.ReplaceAll(cleaned, "-", "")
@@ -1116,15 +1139,24 @@ func parsePhoneOrLID(input string) (types.JID, error) {
 		cleaned = cleaned[:idx]
 	}
 
-	// Detectar si es un LID o un número de teléfono
-	// Los LIDs típicamente son números muy largos (>15 dígitos)
-	// Los números de teléfono normalmente tienen 10-15 dígitos
+	// Verificar que solo queden dígitos
+	for _, ch := range cleaned {
+		if ch < '0' || ch > '9' {
+			return types.JID{}, fmt.Errorf("invalid phone/LID format: %q", input)
+		}
+	}
+
+	// Detectar si es LID o número de teléfono:
+	// - Los números de teléfono internacionales tienen hasta 15 dígitos (E.164)
+	// - Los LIDs de WhatsApp típicamente tienen 15+ dígitos
 	if len(cleaned) > 15 {
-		// Es un LID, usar servidor "lid"
+		// Es un LID numérico - usar servidor "lid"
+		fmt.Printf("[parsePhoneOrLID] Detected LID: %s@lid\n", cleaned)
 		return types.NewJID(cleaned, "lid"), nil
 	}
 
-	// Es un número de teléfono normal
+	// Es un número de teléfono normal - usar servidor estándar
+	fmt.Printf("[parsePhoneOrLID] Detected phone: %s@s.whatsapp.net\n", cleaned)
 	return types.NewJID(cleaned, types.DefaultUserServer), nil
 }
 
