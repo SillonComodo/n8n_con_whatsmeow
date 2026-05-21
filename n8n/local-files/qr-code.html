@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WhatsApp QR Code</title>
+    <meta http-equiv="refresh" content="30">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #075e54;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        img {
+            width: 300px;
+            height: 300px;
+        }
+        h1 { margin-bottom: 20px; color: #075e54; }
+        p { color: #666; margin-top: 15px; }
+        .instructions {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            color: #333;
+            text-align: left;
+        }
+        .instructions ol { margin: 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 WhatsApp QR Code</h1>
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAABlBMVEX///8AAABVwtN+AAAEx0lEQVR42uyZMY7zOhKEi2DAzLyAIF7DgQBdySEzMlOoKxFQ4GtQ8AXojAHBWrTs+f+3sccKdh+zGX3BoFldXc3Bv+f/6yiSS7Hq0RAsu66wz65TWArJdBKQoaPlqFmNVeR9iYDjspQMfRawc4uwo96SATBdcevAHEPZuf0esER2vSVY22FiuLgMU88GWLImeZQ/rCS3GnAikKGXQgy4BquEKyoPCBX/uKxvA6LJ1Y7DdPXluW/3Zb2Mw+T9f4n2I0COoVVtgofKugIX6BbqP9vvy4DKemMpbLoGkKyBZXTJG7K/C/V1AG5r3pY9T1dv1d6uYbWHHuzeJ/wOMM5cCjLm+2IvqiHwMg5zNRzHswDVdTJrcU0nY58ZcxSJtFDp9nQSAJdE6myaFX3EzFIwTIF0GWcBmCazYnTbnXhmqdCTj+QP60+/AqiMeSlUjwTDi2tAKBhE/fu7UN8H4JL8bn80U/nsuCJ0oT3dvqVzAEVuy1p42Cr7hLA+8zAzYv/jUZ8CeYK36MNkIjrm6u2zu+QDMl6y/z6AY4pylFvARTUTQ4FrMCWPZwGKbfIB44CZVnUZ7optZrR8C+b7ANTGGEp2vJPs0zUUKG6McHn6JcC1ycQCt91r6aPowUrPidPiJEDtTYvTDkDAk9J6NjtysT9D7RRABmt3TB5235KJF0BcblTvkPMpIJKjzG6YpXS1VVOeElEi1c6zAPkUi3q0qy8FczLrs+stBrtLUc4BxmmuN9sh5so8k7GPmssik/4kQAarv1nX5mQk0DBaJX7E4t6R9XNAQmjknl+SYw3rsw+aldzPAnCU30oM98VmLYAMVl9Un08CFLdtWa3Kk1mK2rcait0fW0XZ83sh/RTAqJMpGF27GtqsuazP/dF8KH/08HVA7Rv5kr2xpPjts7uNC/njcl8HcIxPy8dGFpsBf+zdCODb7T8HVJsX2jzM1UPSWShlxBw9XD8LUHlOuJUR07xYm6eriVKHGPAzWE8AOuaFzJDo1N1WDcs46OqR1WkA22QId1zWM8/J28uojz/yp3E+B8h4K11vd1HZnLx0Qgt/Xe77ACBLEEfM94qimlkiu0thwahevfl9QPVZSiSth3K8Jq0Fw1zB/W3FHwPiMCHK6svFkg1h7e6RELj/taBvA0qGSBmHmaTd09XjMkIv9bWanAKoPcGLCejqS8cEf+Pe5iWCrwxzAiAVqreys80VXSXDn8Gq3pr8GFBME0B1LJqyfMaX03r7Z1P7OiAxicW6B+8VqssPF5FIhXvHyTMATAh0bNf3IyrUno/nrR/Rfg5oLiwui9eJfwe+7sfi9TZ4AqD6BB/sqNPV8OJYEewRk6x7x6TvA0froYyOyVgRfAwdg46Bin9787uAqN8H9kEn8DLC1BvlVLy3g98Amq43mZs12OMTi2u6gj/t/33geKdd7f5I1yBxMcGq7ralFrUnnAMc79WRWWRIic0IzHpbWH727s+BDB1Dgd5k/Tle3Q+XO2J6OgnYuS0rnWx5sgTxcNqZ8c+WdA4QA1yGESVs1axPZh1FHKcC1nbMXMT6DaOVW/KlvzPM54DcBQpcm6uFald/DBkxnfOA478wpQ/T1VC2H65qZwr1MJ1zgH/P/875TwAAAP//xrFbU3ZcdgAAAAAASUVORK5CYII=" alt="QR Code">
+        <div class="instructions">
+            <ol>
+                <li>Abre <strong>WhatsApp</strong> en tu teléfono</li>
+                <li>Ve a <strong>Configuración → Dispositivos vinculados</strong></li>
+                <li>Toca <strong>Vincular un dispositivo</strong></li>
+                <li>Escanea este código QR</li>
+            </ol>
+        </div>
+        <p>⏱️ Esta página se actualiza automáticamente cada 30 segundos</p>
+    </div>
+</body>
+</html>

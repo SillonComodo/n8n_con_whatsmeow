@@ -1,0 +1,19 @@
+{
+  "name": "n8n-nodes-whatsmeow",
+  "version": "2.0.0",
+  "description": "n8n node for WhatsApp via WhatsMeow - Send/Receive messages, Media, Groups",
+  "keywords": [
+    "n8n-community-node-package"
+  ],
+  "main": "index.js",
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "nodes": [
+      "nodes/WhatsMeow/WhatsMeow.node.js",
+      "nodes/WhatsMeow/WhatsMeowTrigger.node.js"
+    ]
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}

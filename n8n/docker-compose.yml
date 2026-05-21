@@ -1,0 +1,80 @@
+services:
+  # ══════════════════════════════════════════════════════════════
+  # PostgreSQL + PGVector - Para memoria y RAG de agentes AI
+  # Soporta: Chat Memory, Vector Store, Embeddings
+  # ══════════════════════════════════════════════════════════════
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: n8n-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=n8n
+      - POSTGRES_PASSWORD=n8n_password_seguro
+      - POSTGRES_DB=n8n_memory
+      - TZ=America/Mexico_City
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U n8n -d n8n_memory"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ══════════════════════════════════════════════════════════════
+  # n8n - Workflow Automation
+  # ══════════════════════════════════════════════════════════════
+  n8n:
+    image: n8nio/n8n:2.1.4-arm64
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://bryan.tail91a6a6.ts.net/
+      - TZ=America/Mexico_City
+      - NODE_ENV=production
+      - N8N_SECURE_COOKIE=false
+      - N8N_RUNNERS_ENABLED=true
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=336
+      - N8N_USER_MANAGEMENT_DISABLED=true
+      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom/n8n-nodes-whatsmeow
+      - EXTRA_NODE_MODULES_PATH=/home/node/.n8n/custom
+      - N8N_LOG_LEVEL=debug
+      - WHATSMEOW_API_URL=http://whatsmeow:3100
+      - HOME=/home/node
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./local-files:/files
+      - /home/bryan/docker/whatsmeow-bundle:/home/node/.n8n/custom/n8n-nodes-whatsmeow
+    user: "0:0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      whatsmeow:
+        condition: service_started
+
+  whatsmeow:
+    build:
+      context: /home/bryan/docker/whatsmeow-bundle/server
+      dockerfile: Dockerfile
+    container_name: whatsmeow
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    environment:
+      - WHATSMEOW_DATA_DIR=/data/sessions
+      - WHATSMEOW_PORT=3100
+      - TZ=America/Mexico_City
+    volumes:
+      - whatsmeow_data:/data/sessions
+      - ./local-files:/files
+
+volumes:
+  n8n_data:
+  whatsmeow_data:
+  postgres_data:

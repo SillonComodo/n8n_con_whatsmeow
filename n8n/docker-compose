@@ -1,0 +1,29 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      # IMPORTANTE: Cambia 'TU_IP_DE_LA_PI' por la IP real (ej. 192.168.1.50)
+      - WEBHOOK_URL=http://192.168.10.184:5678
+      # Configuración para México (Centro)
+      - TZ=America/Mexico_City
+      - NODE_ENV=production
+      - N8N_SECURE_COOKIE=false
+      - N8N_RUNNERS_ENABLED=true
+      # Limpieza automática para cuidar el espacio en tu Raspberry Pi
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=336 # Borra ejecuciones de más de 14 días
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./local-files:/files
+    # Opcional: Configuración de usuario para evitar problemas de permisos en Linux
+    user: "1000:1000"
+
+volumes:
+  n8n_data:

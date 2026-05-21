@@ -1,0 +1,12 @@
+# Ver todas las sesiones
+/home/bryan/docker/whatsmeow-bundle/manage-sessions.sh list
+
+# Ver estado de una sesión
+/home/bryan/docker/whatsmeow-bundle/manage-sessions.sh status global
+/home/bryan/docker/whatsmeow-bundle/manage-sessions.sh status bryan
+
+# Eliminar una sesión específica
+/home/bryan/docker/whatsmeow-bundle/manage-sessions.sh clean bryan
+
+# Eliminar TODAS las sesiones
+/home/bryan/docker/whatsmeow-bundle/manage-sessions.sh clean-all
